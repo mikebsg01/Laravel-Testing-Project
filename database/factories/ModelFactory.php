@@ -25,3 +25,10 @@ $factory->define(App\Article::class, function (Faker\Generator $faker) {
         'title' => $faker->name
     ];
 });
+
+$factory->define(App\Team::class, function (Faker\Generator $faker) {
+    return [
+        'name'      => $faker->name,
+        'max_size'  => rand(5, 15)
+    ];
+});
