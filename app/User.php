@@ -12,7 +12,10 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name',
+        'email',
+        'password',
+        'team_id'
     ];
 
     /**
@@ -23,4 +26,26 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    /**
+     * Get the team of the user.
+     * 
+     * @return App\Team
+     */
+    public function team() {
+        return $this->belongsTo('App\Team');
+    }
+
+    /**
+     * Remove the relationship between
+     * the user and its team.
+     * 
+     * @return bool Return 'true' if the user has left
+     *              the team successfully.
+     */
+    public function leaveTeam() {
+        $this->team()->dissociate();
+
+        return $this->save();
+    }
 }

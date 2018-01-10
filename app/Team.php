@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as SupportCollection;
 use Exception;
 
 class Team extends Model
@@ -15,29 +16,11 @@ class Team extends Model
    
     /**
      * Get all the members of the team.
+     * 
+     * @return Illuminate\Database\Eloquent\Collection
      */
     public function members() {
         return $this->hasMany('App\User');
-    }
-
-    /**
-     * Add a member to the team.
-     * 
-     * @param App\User $user
-     * 
-     * @return void
-     */
-    public function add($users) {
-        // Guard
-        $this->guardAgainstTooManyMembers();
-
-        if ($users instanceof User) {
-            $this->members()->save($users);
-        }
-
-        if ($users instanceof Collection) {
-            $this->members()->saveMany($users);
-        }
     }
 
     /**
@@ -45,7 +28,7 @@ class Team extends Model
      * 
      * @return int
      */
-    public function count() {
+    public function countMembers() {
         return $this->members->count();
     }
 
@@ -56,8 +39,92 @@ class Team extends Model
      * @throws \Exception
      */
     protected function guardAgainstTooManyMembers() {
-        if ($this->count() >= $this->max_size) {
-            throw new Exception;
+        if ($this->countMembers() >= $this->max_size) {
+            throw new Exception('The number of team members is the maximum.');
         }
+    }
+
+    /**
+     * Return 'true' if the object is an user.
+     * 
+     * @param mixed $object
+     * 
+     * @return bool
+     */
+    public function isUser($object) {
+        return $object instanceof User;
+    }
+
+    /**
+     * Add one or multiple members to the team.
+     * 
+     * @param mixed $users
+     * 
+     * @return bool Return 'true' if the users have been 
+     *              successfully added.
+     */
+    public function add($users) {
+        // Guard
+        $this->guardAgainstTooManyMembers();
+        $users = $users instanceof User ? collect([$users]) : $users;
+
+        if (! $users instanceof SupportCollection) {
+            return false;
+        }
+
+        $users = $users->filter(function($value, $key) {
+            return $this->isUser($value);
+        });
+
+        return $this->members()->saveMany($users);
+    }
+
+    /**
+     * Return 'true' if the user is a
+     * member of the team.
+     * 
+     * @param mixed $user
+     * 
+     * @return bool
+     */
+    public function isMember($user) {
+        return $this->isUser($user) and $this->id == $user->team_id;
+    }
+
+    /**
+     * Remove one or multiple members of the team.
+     * 
+     * @param mixed $users
+     * 
+     * @return bool Return 'true' if the users have been 
+     *              successfully removed.
+     */
+    public function remove($users) {
+        $users = $users instanceof User ? collect([$users]) : $users;
+
+        if (! $users instanceof SupportCollection) {
+            return false;
+        }
+
+        $users = $users->filter(function($value, $key) {
+            return $this->isMember($value);
+        });
+
+        return $this->members()
+                    ->whereIn('id', $users->pluck('id'))
+                    ->update(['team_id' => null]);
+    }
+
+    /**
+     * Remove all the members of the team.
+     * 
+     * @param mixed $users
+     * 
+     * @return bool Return 'true' if all the users of the team
+     *              have been successfully removed.
+     */
+    public function reset() {
+        return $this->members()
+                    ->update(['team_id' => null]);
     }
 }
