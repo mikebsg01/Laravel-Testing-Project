@@ -33,18 +33,6 @@ class Team extends Model
     }
 
     /**
-     * Guard against adding more members than
-     * the maximum size allowed for the team.
-     * 
-     * @throws \Exception
-     */
-    protected function guardAgainstTooManyMembers() {
-        if ($this->countMembers() >= $this->max_size) {
-            throw new Exception('The number of team members is the maximum.');
-        }
-    }
-
-    /**
      * Return 'true' if the object is an user.
      * 
      * @param mixed $object
@@ -53,6 +41,45 @@ class Team extends Model
      */
     public function isUser($object) {
         return $object instanceof User;
+    }
+
+    /**
+     * Filter the users in a given parameter.
+     * 
+     * @param mixed $users
+     * 
+     * @return Illuminate\Support\Collection
+     */
+    protected function filterUsers($users) {
+        $users = $this->isUser($users) ? collect([$users]) : $users;
+
+        if (! $users instanceof SupportCollection) {
+            return collect([]); // returns an empty collection
+        }
+
+        $users = $users->filter(function($value, $key) {
+            return $this->isUser($value);
+        });
+
+        return $users;
+    }
+
+    /**
+     * Guard against adding more members than
+     * the maximum size allowed for the team.
+     * 
+     * @param mixed $users
+     * 
+     * @throws \Exception
+     */
+    protected function guardAgainstTooManyMembers($users) {
+        $users = $this->filterUsers($users);
+        $numMembersToAdd = $users->count();
+        $newMembersCount = $this->countMembers() + $numMembersToAdd;
+
+        if ($newMembersCount > $this->max_size) {
+            throw new Exception('The number of team members is the maximum.');
+        }
     }
 
     /**
@@ -65,16 +92,8 @@ class Team extends Model
      */
     public function add($users) {
         // Guard
-        $this->guardAgainstTooManyMembers();
-        $users = $users instanceof User ? collect([$users]) : $users;
-
-        if (! $users instanceof SupportCollection) {
-            return false;
-        }
-
-        $users = $users->filter(function($value, $key) {
-            return $this->isUser($value);
-        });
+        $this->guardAgainstTooManyMembers($users);
+        $users = $this->filterUsers($users);
 
         return $this->members()->saveMany($users);
     }

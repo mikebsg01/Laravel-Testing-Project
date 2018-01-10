@@ -147,4 +147,14 @@ class TeamTest extends TestCase
 
         $this->assertEquals(0, $team->countMembers());
     }
+
+    /** @test */
+    public function it_cant_add_multiple_members_that_exceed_the_maximum_size() {
+        $team = factory(Team::class)->create(['max_size' => 2]);
+        $users = factory(User::class, 3)->create();
+
+        $this->setExpectedException('Exception');
+
+        $team->add($users);
+    }
 }
