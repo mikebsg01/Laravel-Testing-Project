@@ -106,7 +106,7 @@ class TeamTest extends TestCase
 
         $this->assertEquals(6, $team->countMembers());
 
-        $team->remove($users->whereIn('id', [1, 2, 4, 5]));
+        $team->remove($users->slice(0, 4));
         $team = $team->fresh();
 
         $this->assertEquals(2, $team->countMembers());
