@@ -27,6 +27,8 @@ class CreateTeamsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('teams');
+        if (Schema::hasTable('teams')) {
+            Schema::drop('teams');
+        }
     }
 }

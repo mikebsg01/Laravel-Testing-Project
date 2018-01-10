@@ -27,6 +27,8 @@ class CreateArticlesTable extends Migration
      */
     public function down()
     {
-        Schema::drop('articles');
+        if (Schema::hasTable('articles')) {
+            Schema::drop('articles');
+        }
     }
 }
