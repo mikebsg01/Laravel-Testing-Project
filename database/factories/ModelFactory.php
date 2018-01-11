@@ -32,3 +32,13 @@ $factory->define(App\Team::class, function (Faker\Generator $faker) {
         'max_size'  => rand(5, 15)
     ];
 });
+
+$factory->define(App\Post::class, function (Faker\Generator $faker) {
+    $user = factory(App\User::class)->create();
+
+    return [
+        'user_id'   => $user->id,
+        'title'     => $faker->sentence,
+        'body'      => $faker->paragraph
+    ];
+});
