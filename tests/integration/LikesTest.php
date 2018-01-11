@@ -11,15 +11,22 @@ class LikesTest extends TestCase
     protected $post;
     protected $user;
 
+    public function signIn(User $user = null) {
+        $this->user = $user ?: factory(App\User::class)->create();
+
+        $this->actingAs($this->user);
+
+        return $this;
+    }
+
     protected function userLikeAPost() {
         // Given I have a post
         // and an user
         // and that user is logged in
-        $this->post = factory(App\Post::class)->create();
-        $this->user = factory(App\User::class)->create();
+        $this->post = createPost();
 
         // when they like a post
-        $this->actingAs($this->user);
+        $this->signIn();
         $this->post->like();
     }
 
