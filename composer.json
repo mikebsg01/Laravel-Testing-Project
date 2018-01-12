@@ -28,7 +28,8 @@
             "tests/TestCase.php"
         ],
         "files" : [
-            "tests/helpers/functions.php"
+            "tests/helpers/functions.php",
+            "tests/traits/MailTracking.php"
         ]
     },
     "scripts": {

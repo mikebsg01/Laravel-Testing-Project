@@ -18,3 +18,18 @@ Route::get('/', function () {
 Route::get('/feedback', function () {
     return "You've been clicked, punk.";
 });
+
+if (env('APP_ENV', 'local') === 'local') {
+
+    Route::group(['prefix' => 'test'], function () {
+        Route::get('/email', function() {
+            Mail::raw('Hello, how are my friend?', function ($message) {
+                $message->subject('Hi Freddy');
+                $message->to('foo@bar.com');
+                $message->from('bar2@mail.com');
+            });
+
+            return 'Email was sent.';
+        });
+    });
+}
