@@ -12,11 +12,16 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
         'team_id'
     ];
+
+    public function getFullNameAttribute() {
+        return "$this->first_name $this->last_name";
+    }
 
     /**
      * The attributes that should be hidden for arrays.
